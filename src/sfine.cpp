@@ -8,21 +8,21 @@ auto has_call_impl(int) -> decltype(std::declval<T>().call(), std::true_type{});
 template <typename> auto has_call_impl(...) -> std::false_type;
 
 template <typename T> using has_call = decltype(has_call_impl<T>(0));
+template <typename T>
+constexpr bool has_call_v = decltype(has_call_impl<T>(0))::value;
 
 // Template class with a member function that uses SFINAE
 template <typename T> class MyClass {
 public:
   // Member function enabled if T has a member function `call`
   template <typename U = T>
-  auto callIfCallable() ->
-      typename std::enable_if<has_call<U>::value, void>::type {
+  auto callIfCallable() -> std::enable_if_t<has_call_v<U>> {
     t.call();
   }
 
   // Member function enabled if T does not have a member function `call`
   template <typename U = T>
-  auto callIfCallable() ->
-      typename std::enable_if<!has_call<U>::value, void>::type {
+  auto callIfCallable() -> std::enable_if_t<!has_call_v<U>> {
     std::cout << "T does not have a member function `call`" << std::endl;
   }
 
